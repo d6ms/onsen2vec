@@ -6,7 +6,7 @@ from gensim.models.callbacks import CallbackAny2Vec
 
 class EpochLogger(CallbackAny2Vec):
   def __init__(self, docs):
-    self.epoch = 0
+    self.epoch = 1
     self.docs = docs
   def on_epoch_begin(self, model):
     print("Epoch #{} start".format(self.epoch))
@@ -26,7 +26,13 @@ class EpochLogger(CallbackAny2Vec):
 
 
 def train(docs):
-  model = Doc2Vec(vector_size=400, alpha=0.05, sample=1e-4, min_count=1, window=2, workers=4, epochs=50, callbacks=[EpochLogger(docs)])
+  model = Doc2Vec(vector_size=400, alpha=0.06, sample=1e-4, min_count=1, window=1, workers=4, epochs=30, callbacks=[EpochLogger(docs)], seed=0)
+  model.build_vocab(docs)
+  model.train(docs, total_examples=model.corpus_count, epochs=model.epochs)
+  return model
+
+def train_pretrained(docs, wordvecs):
+  model = Doc2Vec(vector_size=400, alpha=0.03, sample=1e-4, min_count=1, window=1, workers=4, epochs=30, callbacks=[EpochLogger(docs)], seed=0, pretrained_emb=wordvecs)
   model.build_vocab(docs)
   model.train(docs, total_examples=model.corpus_count, epochs=model.epochs)
   return model
@@ -37,16 +43,3 @@ def save_corpus(train_corpus, name='train_corpus.pkl'):
     row = pd.Series([doc.tags[0], doc.words], index=df.columns)
     df = df.append(row, ignore_index=True)
     df.to_pickle(name)
-
-# filename = sys.argv[1]
-# docs = []
-# with open(filename, mode='r') as f:
-#   for i, line in enumerate(f.readlines()):
-#     line = line.rstrip()
-#     if len(line) == 0:
-#       continue
-#     sentence = TaggedDocument(words=line.split('\t'), tags=[f'{filename}_{i}'])
-#     docs.append(sentence)
-
-# model = train(docs)
-# model.save('onsen2vec.model')

@@ -3,3 +3,5 @@ data
 __pycache__
 model
 onsen_dataset.pkl
+onsen2vec.tar.gz
+gensim
